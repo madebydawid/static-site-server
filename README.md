@@ -99,7 +99,7 @@ h1 {
 - Add an image file
 Place an image in the same directory and name it `image.jpg` (use your preferred image)
 
-## Step 3: Configure Nginx for hosting the website
+## Configure Nginx for hosting the website
 - Copy files to the Server using `scp`
 ```bash
 scp -r ~/my-static-site/* username@your-vm-public-ip:/var/www/html/
@@ -126,4 +126,62 @@ sudo systemctl reload nginx
 ```vbnet
 http://your-vm-public-ip
 ```
+[static-site-working](add link)
 
+## Set up rsync for Easy Deployment (Optional)
+If you want to streamline updating your static site, you can use `rsync` to deploy changes to the server.
+
+- **Install** `rsync`
+```bash
+sudo apt install rsync -y
+```
+
+- **Create a `deploy.sh` script on your local machine**: 
+```bash
+nano deploy.sh
+```
+- **Add content** to the script
+```bash
+#!/bin/bash
+
+LOCAL_DIR="~/sitename/"         # Replace 'site-name' with the name of your local folder
+REMOTE_USER="azure-user"        # Replace with your actual username on the VM
+REMOTE_HOST="your-public-vm-ip" # Replace with the public IP address of your VM
+REMOTE_DIR="/var/www/html"      # Path on the server where the files should be deployed
+SSH_KEY="path/to/id_rsa"        # Replace with the full path to your private SSH key (e.g., ~/.ssh/id_rsa)
+
+# Function to run a command with error checking
+run_command() {
+    if ! "$@"; then
+        echo "Error: Command failed: $*"
+        exit 1
+    fi
+}
+
+# Ensure the remote directory exists and has correct permissions
+echo "Setting up remote directory..."
+run_command ssh -i "$SSH_KEY" "$REMOTE_USER@$REMOTE_HOST" "sudo mkdir -p $REMOTE_DIR && sudo chown -R $REMOTE_USER:$REMOTE_USER $REMOTE_DIR && sudo chmod -R 755 $REMOTE_DIR"
+
+# Sync files
+echo "Syncing files..."
+run_command rsync -avz --chmod=D755,F644 -e "ssh -i $SSH_KEY" "$LOCAL_DIR" "$REMOTE_USER@$REMOTE_HOST:$REMOTE_DIR"
+
+# Set correct permissions after sync
+echo "Setting final permissions..."
+run_command ssh -i "$SSH_KEY" "$REMOTE_USER@$REMOTE_HOST" "sudo chown -R nginx:nginx $REMOTE_DIR && sudo chmod -R 755 $REMOTE_DIR"
+
+echo "Deployment completed successfully!"
+
+```
+
+- **Make the script executable**
+```bash
+chmod -x deploy.sh
+```
+- **Run the script to deploy your site**
+```bash
+./deploy.sh
+```
+
+---
+[Link to roadmap.sh project](https://roadmap.sh/projects/static-site-server)
