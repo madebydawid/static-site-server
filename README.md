@@ -1,7 +1,14 @@
-# Quick Guide to Setting Up a VM in Azure
+# Static Site Server
+**Learn how to set up and deploy a static site using an Nginx web server and `rsync` for seamless updates.**
+
+The goal of this project is to provide hands-on experience with setting up an Nginx web server and hosting a static site. Additionally, you'll learn how to use `rsync` to deploy updates directly to the server without manual SSH connections.
+
+
+## Quick Start: Setting Up an Azure VM for Your Static Site
 
 ## Overview
-This guide provides concise instructions for setting up a Virtual Machine (VM) in Azure using the Microsoft Azure Portal. The steps below follow the official [Microsoft documentation](https://learn.microsoft.com/en-us/azure/virtual-machines/linux/quick-create-portal?tabs=ubuntu) and outline the essential process to get an Ubuntu-based VM up and running.
+This guide outlines the essential steps for setting up a Virtual Machine (VM) in Microsoft Azure to host your static site. Following these instructions ensures that your site is backed by a reliable Ubuntu-based server. For detailed reference, see the [official Microsoft documentation](https://learn.microsoft.com/en-us/azure/virtual-machines/linux/quick-create-portal?tabs=ubuntu).
+
 
 ## Steps to Create an Ubuntu VM
 
