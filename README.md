@@ -1,23 +1,129 @@
-Here's a simple guide on how to set up a VM in Azure using the Microsoft documentation you provided:
+# Quick Guide to Setting Up a VM in Azure
 
-## Setting Up an Azure Virtual Machine
+## Overview
+This guide provides concise instructions for setting up a Virtual Machine (VM) in Azure using the Microsoft Azure Portal. The steps below follow the official [Microsoft documentation](https://learn.microsoft.com/en-us/azure/virtual-machines/linux/quick-create-portal?tabs=ubuntu) and outline the essential process to get an Ubuntu-based VM up and running.
 
-### Step 1: Sign in to the Azure Portal
-1. Go to the [Azure Portal](https://portal.azure.com/) and sign in with your account.
+## Steps to Create an Ubuntu VM
 
-### Step 2: Create a Virtual Machine
-1. Click on the Create button and select Virtual Machine from the list of services.
-2. Choose the subscription you want to use and select Create new for the resource group.
-3. Give your VM a name, select the region, and choose the Ubuntu Linux image.
-4. Select the appropriate VM size based on your needs.
-5. Configure the administrative account by providing a username and SSH public key.
-6. Review and create the virtual machine.
+### 1. Sign In to the Azure Portal
+- Go to [https://portal.azure.com](https://portal.azure.com) and log in with your Azure credentials.
 
-### Step 3: Connect to the Virtual Machine
-1. Once the VM is deployed, navigate to the resource and click on the Connect button.
-2. Choose the SSH option and copy the connection string.
-3. Open your terminal or command prompt and run the copied SSH command to connect to your VM.
+### 2. Create a Virtual Machine
+- In the left-hand menu, click **"Create a resource"**.
+- Search for **"Virtual Machine"** and select **"Create"**.
+- Fill in the following details:
+  - **Subscription**: Choose your subscription.
+  - **Resource Group**: Select an existing group or create a new one.
+  - **Virtual machine name**: Enter a name for your VM.
+  - **Region**: Choose the region closest to your location.
+  - **Image**: Select **Ubuntu Server 24.04 LTS**.
+  - **Size**: Choose an appropriate size for your needs (e.g., Standard DS1 v2).
 
-That's it! You've successfully set up a new Azure Virtual Machine running Ubuntu Linux. You can now start configuring and using your VM for your desired workloads.
+### 3. Configure Administrator Account
+- Under **Administrator account**, choose **SSH public key**.
+- Enter your **username**.
+- Paste your **SSH public key** (generated locally with `ssh-keygen`).
 
-Remember to explore the Azure documentation for more advanced configuration options and features to fit your specific needs.
+### 4. Configure Networking
+- In the **Networking** tab, review the default settings:
+  - Ensure **Virtual network** and **Subnet** are set.
+  - Set **Public IP** to "Enabled" for external access.
+  - Keep **NIC network security group** as "Basic" to enable SSH access.
+
+### 5. Review and Create
+- Click **Review + create**.
+- Verify the configurations and click **Create** to deploy the VM.
+
+### 6. Connect to Your VM
+- Once the VM is deployed, navigate to the **Virtual Machines** section in the portal.
+- Select your VM and copy its **public IP address**.
+- Connect using SSH:
+  ```bash
+  ssh username@your-vm-public-ip
+  ```
+
+## Update and Install Nginx
+- Update package-list on the server with
+
+```bash
+sudo apt update && sudo apt upgrade -y
+```
+- Install Nginx
+```bash
+sudo apt install nginx -y
+```
+- Start and activate Nginx
+```bash
+sudo systemctl start nginx
+sudo systemctl enable nginx
+```
+- Control that Nginx is running
+```bash
+sudo systemctl status nginx
+```
+*If you see "active (running)", then Nginx is running correctly*
+
+## Create and prepare a simple static webpage
+
+- Create a local folder for your website (on your machine)
+```bash
+mkdir ~/my-static-site
+cd ~/my-static-site
+```
+- Create a simple HTML-file
+```html
+echo '<!DOCTYPE html>
+<html>
+<head>
+    <title>Dawids Static Site</title>
+    <link rel="stylesheet" type="text/css" href="styles.css">
+</head>
+<body>
+    <h1>Welcome to My Static Site!</h1>
+    <p>This is a simple static website hosted with Nginx, as part of [Roadmap.sh](https://roadmap.sh/projects/static-site-server) project.</p>
+    <img src="image.jpg" alt="Sample Image">
+</body>
+</html>' > index.html
+```
+- Add a styles.css file
+```css
+echo 'body {
+    font-family: Arial, sans-serif;
+    text-align: center;
+}
+h1 {
+    color: #2c3e50;
+}' > styles.css
+```
+
+- Add an image file
+Place an image in the same directory and name it `image.jpg` (use your preferred image)
+
+## Step 3: Configure Nginx for hosting the website
+- Copy files to the Server using `scp`
+```bash
+scp -r ~/my-static-site/* username@your-vm-public-ip:/var/www/html/
+```
+- Edit `Nginx config`-file to Serve the Site
+```bash
+sudo nano /etc/nginx/sites-available/default
+```
+- Modify the `root` directive to point to your website
+```bash
+root /var/www/html;
+index index.html;
+```
+- Test Nginx Configuration by checking for syntax errors
+```bash
+sudo nginx -t
+```
+- Reload Nginx
+```bash
+sudo systemctl reload nginx
+```
+
+- Verify the Webpage in your browser
+```vbnet
+http://your-vm-public-ip
+```
+
