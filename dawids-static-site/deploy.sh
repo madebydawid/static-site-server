@@ -1,19 +1,29 @@
 #!/bin/bash
 
-# Configuration
-LOCAL_PATH="/d/static-site-server/dawids-static-site"  # Ange sökvägen till din lokala mapp med webbplatsfiler
-REMOTE_USER="Panda"          # Ditt användarnamn på servern
-REMOTE_HOST="51.12.60.115" # Serverns IP-adress
-REMOTE_PATH="/var/www/html/dawids-static-site"  # Den sökväg på servern där webbplatsen ska kopieras
+LOCAL_DIR="~/sitename/"         # Replace 'site-name' with the name of your local folder
+REMOTE_USER="azure-user"        # Replace with your actual username on the VM
+REMOTE_HOST="your-public-vm-ip" # Replace with the public IP address of your VM
+REMOTE_DIR="/var/www/html"      # Path on the server where the files should be deployed
+SSH_KEY="path/to/id_rsa"        # Replace with the full path to your private SSH key (e.g., ~/.ssh/id_rsa)
 
-# Sync files to the server
-echo "Deploying files to the server..."
-rsync -avz --delete $LOCAL_PATH $REMOTE_USER@$REMOTE_HOST:$REMOTE_PATH
+# Function to run a command with error checking
+run_command() {
+    if ! "$@"; then
+        echo "Error: Command failed: $*"
+        exit 1
+    fi
+}
 
-# Check if the deployment was successful
-if [ $? -eq 0 ]; then
-    echo "Deployment completed successfully!"
-else
-    echo "Deployment failed. Please check for errors."
-fi
+# Ensure the remote directory exists and has correct permissions
+echo "Setting up remote directory..."
+run_command ssh -i "$SSH_KEY" "$REMOTE_USER@$REMOTE_HOST" "sudo mkdir -p $REMOTE_DIR && sudo chown -R $REMOTE_USER:$REMOTE_USER $REMOTE_DIR && sudo chmod -R 755 $REMOTE_DIR"
 
+# Sync files
+echo "Syncing files..."
+run_command rsync -avz --chmod=D755,F644 -e "ssh -i $SSH_KEY" "$LOCAL_DIR" "$REMOTE_USER@$REMOTE_HOST:$REMOTE_DIR"
+
+# Set correct permissions after sync
+echo "Setting final permissions..."
+run_command ssh -i "$SSH_KEY" "$REMOTE_USER@$REMOTE_HOST" "sudo chown -R nginx:nginx $REMOTE_DIR && sudo chmod -R 755 $REMOTE_DIR"
+
+echo "Deployment completed successfully!"

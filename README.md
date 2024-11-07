@@ -126,7 +126,9 @@ sudo systemctl reload nginx
 ```vbnet
 http://your-vm-public-ip
 ```
-[static-site-working](add link)
+<br>
+
+[Static-site-working](https://github.com/madebydawid/static-site-server/blob/main/dawids-static-site/images/static-site-working.jpg?raw=true)
 
 ## Set up rsync for Easy Deployment (Optional)
 If you want to streamline updating your static site, you can use `rsync` to deploy changes to the server.
@@ -140,7 +142,10 @@ sudo apt install rsync -y
 ```bash
 nano deploy.sh
 ```
-- **Add content** to the script
+- **Copy the script below** from *Details* or **download** it from [here](https://github.com/madebydawid/static-site-server/blob/main/dawids-static-site/deploy.sh)
+
+<details>
+
 ```bash
 #!/bin/bash
 
@@ -173,6 +178,9 @@ run_command ssh -i "$SSH_KEY" "$REMOTE_USER@$REMOTE_HOST" "sudo chown -R nginx:n
 echo "Deployment completed successfully!"
 
 ```
+</details>
+<br>
+<br>
 
 - **Make the script executable**
 ```bash
